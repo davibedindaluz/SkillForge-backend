@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { Router } from "express";
 import cors from "cors";
 import { askOpenRouter } from "./ai.js";
 import { sessionManager } from "./sessions.js";
@@ -7,6 +7,8 @@ import { connectDB } from "./config/database.js";
 import userRoutes from "./routes/users.js";
 import teacherRoutes from "./routes/teachers.js";
 import chatRoutes from "./routes/chats.js";
+import quizRoutes from "./routes/quizzes.js";
+
 import crypto from "crypto";
 
 const app = express();
@@ -40,7 +42,6 @@ app.post("/ask", async (req, res) => {
 		console.log("🔑 Session ID:", sessionId);
 
 		sessionManager.addMessage(sessionId, "user", question);
-
 		const history = sessionManager.getMessages(sessionId).slice(0, -1);
 
 		const aiAnswer = await askOpenRouter(
@@ -51,7 +52,6 @@ app.post("/ask", async (req, res) => {
 		);
 
 		sessionManager.addMessage(sessionId, "assistant", aiAnswer);
-
 		console.log("✅ Resposta gerada com sucesso");
 
 		return res.json({
@@ -78,16 +78,20 @@ app.delete("/session/:sessionId", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/chats", chatRoutes);
+app.use("/api/quiz", quizRoutes);
 
 connectDB();
 
 app.listen(PORT, () => {
 	console.log(`🚀 Backend rodando em http://localhost:${PORT}`);
 	console.log(`🤖 Modelo: ${MODEL}`);
-	console.log(`📋 Rotas registradas:`);
+	console.log(`📋 Rotas:`);
 	console.log(`   - POST /api/users`);
 	console.log(`   - GET /api/users`);
 	console.log(`   - GET /api/teachers`);
 	console.log(`   - GET /api/chats/:userId/:teacherId`);
 	console.log(`   - POST /api/chats/:userId/:teacherId/message`);
+	console.log(`   - GET /api/quiz`);
+	console.log(`   - GET /api/quiz/:quizId`);
+	console.log(`   - POST /api/quiz/generate`);
 });

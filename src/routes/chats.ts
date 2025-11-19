@@ -50,7 +50,6 @@ router.get("/:chatId", async (req, res) => {
 	}
 });
 
-// Cria novo chat
 router.post("/", async (req, res) => {
 	try {
 		const { userId, teacherId, title } = req.body;

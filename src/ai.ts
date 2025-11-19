@@ -115,4 +115,110 @@ export async function askOpenRouter(
 	}
 }
 
+// NOVA FUNÇÃO PARA GERAR QUIZ
+interface QuizQuestion {
+	question: string;
+	options: string[];
+	correctAnswer: number;
+	explanation: string;
+}
+
+export async function generateQuizWithAI(
+	subject: string,
+	topic: string,
+	difficulty: number,
+	questionsCount: number
+): Promise<QuizQuestion[]> {
+	const prompt = `Você é um gerador profissional de questões de quiz educacional.
+
+TAREFA: Crie ${questionsCount} questões de múltipla escolha sobre "${topic}" (matéria: ${subject}).
+
+NÍVEL DE DIFICULDADE: ${difficulty}/10
+- 1-3: Básico (conceitos fundamentais)
+- 4-7: Intermediário (aplicação e análise)
+- 8-10: Avançado (síntese e avaliação crítica)
+
+FORMATO JSON OBRIGATÓRIO (responda APENAS com o JSON, sem markdown):
+[
+  {
+    "question": "Pergunta clara e objetiva?",
+    "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+    "correctAnswer": 0,
+    "explanation": "Explicação detalhada da resposta correta"
+  }
+]
+
+REGRAS OBRIGATÓRIAS:
+- SEMPRE 4 opções por questão
+- correctAnswer é o índice (0, 1, 2 ou 3)
+- Perguntas claras, objetivas e sem ambiguidade
+- Uma única resposta correta por questão
+- Respostas factualmente corretas
+- Opções de resposta devem ser distintas e não repetidas 
+- Explicações educativas e detalhadas
+- Português formal e correto
+- SEM markdown, SEM comentários, APENAS JSON puro`;
+
+	const payload = {
+		model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp:free",
+		messages: [{ role: "user", content: prompt }],
+		max_tokens: 3000,
+		temperature: 0.7,
+	};
+
+	const headers = {
+		"Content-Type": "application/json",
+		Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+	};
+
+	console.log("🤖 Generating quiz with AI...");
+	console.log("   Subject:", subject);
+	console.log("   Topic:", topic);
+	console.log("   Difficulty:", difficulty);
+	console.log("   Questions:", questionsCount);
+
+	try {
+		const res = await axios.post(OPENROUTER_URL, payload, { headers });
+		console.log("✅ Quiz generated");
+
+		const content = res.data?.choices?.[0]?.message?.content ?? "";
+
+		// Remove markdown se houver
+		const cleanContent = content
+			.replace(/```json\n?/g, "")
+			.replace(/```\n?/g, "")
+			.trim();
+
+		const questions: QuizQuestion[] = JSON.parse(cleanContent);
+
+		// Validação básica
+		if (!Array.isArray(questions) || questions.length === 0) {
+			throw new Error("Invalid quiz format");
+		}
+
+		// Valida cada questão
+		questions.forEach((q, index) => {
+			if (
+				!q.question ||
+				!Array.isArray(q.options) ||
+				q.options.length !== 4 ||
+				typeof q.correctAnswer !== "number" ||
+				q.correctAnswer < 0 ||
+				q.correctAnswer > 3
+			) {
+				throw new Error(`Invalid question format at index ${index}`);
+			}
+		});
+
+		console.log("✅ Quiz validated successfully");
+		return questions;
+	} catch (error: any) {
+		console.error("❌ Quiz generation error:");
+		console.error("   Status:", error.response?.status);
+		console.error("   Message:", error.message);
+
+		throw new Error("Failed to generate quiz with AI");
+	}
+}
+
 export { knowledge };
