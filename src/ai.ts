@@ -30,6 +30,11 @@ console.log("🗂️ Knowledge loaded successfully");
 function buildSystemPrompt(): string {
 	return `${knowledge.systemIdentity.description}
 
+IDIOMA:
+- SEMPRE responda em PORTUGUÊS BRASILEIRO, independente do idioma da pergunta
+- EXCEÇÃO: Se a matéria for especificamente "Inglês" ou "English", você pode usar inglês quando pedagogicamente necessário
+- Mantenha termos técnicos em inglês quando forem universalmente reconhecidos (ex: "JavaScript", "HTTP")
+
 CORE PERSONALITY:
 ${knowledge.systemIdentity.corePersonality.map((trait) => `- ${trait}`).join("\n")}
 
@@ -130,6 +135,8 @@ export async function generateQuizWithAI(
 	questionsCount: number
 ): Promise<QuizQuestion[]> {
 	const prompt = `Você é um gerador profissional de questões de quiz educacional.
+
+IMPORTANTE: Responda SEMPRE em PORTUGUÊS BRASILEIRO, exceto se a matéria for especificamente "Inglês" ou "English".
 
 TAREFA: Crie ${questionsCount} questões de múltipla escolha sobre "${topic}" (matéria: ${subject}).
 

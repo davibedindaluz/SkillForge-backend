@@ -241,10 +241,7 @@
 		"nextSteps": "Now that you understand [current], you're ready to explore [next]. Would you like to continue?"
 	},
 	"modelConfiguration": {
-		"preferredModels": [
-			"google/gemini-2.0-flash-exp:free",
-			"deepseek/deepseek-r1-distill-llama-70b:free"
-		],
+		"preferredModels": ["google/gemini-2.0-flash-exp:free"],
 		"systemPromptIntegration": "Use entire knowledge base as system context, emphasizing teaching philosophy and behavioral guidelines"
 	}
 }
