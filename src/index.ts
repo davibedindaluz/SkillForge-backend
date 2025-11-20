@@ -8,6 +8,7 @@ import userRoutes from "./routes/users.js";
 import teacherRoutes from "./routes/teachers.js";
 import chatRoutes from "./routes/chats.js";
 import quizRoutes from "./routes/quizzes.js";
+import analyticsRoutes from "./routes/analytics.js";
 
 import crypto from "crypto";
 
@@ -79,6 +80,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 connectDB();
 
